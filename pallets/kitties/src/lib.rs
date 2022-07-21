@@ -5,6 +5,7 @@
 /// <https://docs.substrate.io/v3/runtime/frame>
 pub use pallet::*;
 pub use sp_std::vec::Vec;
+use frame_support::traits::{ UnixTime, Get };
 
 #[cfg(test)]
 mod mock;
@@ -36,6 +37,7 @@ pub mod pallet {
 		price: u32,
 		gender: Gender,
 		owner: T::AccountId,
+		pub created_date: u128,
 	}
 
 	impl Default for Gender {
@@ -49,6 +51,9 @@ pub mod pallet {
 	pub trait Config: frame_system::Config {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
+		type CurrentTime: UnixTime;
+		#[pallet::constant]
+		type KittyLimit: Get<u32>;
 	}
 
 	#[pallet::pallet]
@@ -99,11 +104,13 @@ pub mod pallet {
 			ensure!(price>0, Error::<T>::PriceTooLow);
 			ensure!(!KittyDNAs::<T>::contains_key(&dna), Error::<T>::AlreadyExisted);
 			let gender = Self::kitty_gender(dna.clone())?;
+			let current_time = T::CurrentTime::now().as_millis();
 			let kitty = Kitty {
 				dna: dna.clone(),
 				price: price,
 				gender: gender,
 				owner: who.clone(),
+				created_date: current_time,
 			};
 			let mut current_number = Self::quantity();
 			<KittyDNAs<T>>::insert(&dna, kitty);
