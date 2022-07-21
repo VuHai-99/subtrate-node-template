@@ -273,6 +273,7 @@ impl pallet_demo::Config for Runtime {
 impl pallet_kitties::Config for Runtime {
 	type Event = Event;
 	type MyTime = pallet_timestamp::Pallet<Runtime>;
+	type MaximumKitty = u32;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.

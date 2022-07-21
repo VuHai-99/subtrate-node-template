@@ -53,7 +53,7 @@ pub mod pallet {
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 		type CurrentTime: UnixTime;
 		#[pallet::constant]
-		type KittyLimit: Get<u32>;
+		type MaximumKitty: Get<u32>;
 	}
 
 	#[pallet::pallet]
@@ -94,6 +94,7 @@ pub mod pallet {
 		AlreadyExisted,
 		NoneExisted,
 		WrongReceiver,
+		KittyOverflow
 	}
 
 	#[pallet::call]
@@ -112,7 +113,11 @@ pub mod pallet {
 				owner: who.clone(),
 				created_date: current_time,
 			};
+
+			
+
 			let mut current_number = Self::quantity();
+			ensure!(current_number < T::MaximumKitty::get() as usize, Error::<T>::KittyOverflow);
 			<KittyDNAs<T>>::insert(&dna, kitty);
 			current_number += 1;
 			Kitties::<T>::put(current_number);
